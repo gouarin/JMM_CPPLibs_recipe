@@ -1,0 +1,32 @@
+package:
+    name: jmm_cpplibs
+    version: 0.1.1
+source:
+    fn: v0.1.1.tar.gz
+    sha256: a7f87193e342248ea441f9c304d381d85285fb300c47b0676828d6b5c9a6788b
+    url: https://github.com/Mirebeau/JMM_CPPLibs/archive/v0.1.1.tar.gz
+build:
+    number: '0'
+    skip: true  # [win and py<35]
+
+requirements:
+    build:
+        - cmake
+        - toolchain
+
+test:
+    commands:
+        - if not exist %LIBRARY_INC%\\JMM_CPPLibs\\Output\\IO.h exit 1                           # [win]
+        - if not exist %LIBRARY_LIB%\\cmake\\JMM_CPPLibs\\JMM_CPPLibsConfig.cmake exit 1         # [win]
+        - if not exist %LIBRARY_LIB%\\cmake\\JMM_CPPLibs\\JMM_CPPLibsConfigVersion.cmake exit 1  # [win]
+        - test -f ${PREFIX}/include/JMM_CPPLibs/Output/IO.h                                      # [unix]
+        - test -f ${PREFIX}/lib/cmake/JMM_CPPLibs/JMM_CPPLibsConfig.cmake                        # [unix]
+        - test -f ${PREFIX}/lib/cmake/JMM_CPPLibs/JMM_CPPLibsConfigVersion.cmake                 # [unix]
+
+about:
+    dev_url: https://github.com/Mirebeau/JMM_CPPLibs
+    license: Apache License, Version 2.0
+    license_family: Apache
+extra:
+    recipe-maintainers:
+        - gouarin

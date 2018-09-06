@@ -1,0 +1,40 @@
+language: generic
+os: osx
+osx_image: xcode6.4
+env:
+  matrix:
+  - CONDA_PY=36
+  global:
+  - secure: WrSldmfiZGMbDpk/5t7dAR/cWRFZqrDZ22iq/PYvTZ5IxEf8nXQHgi3dMaTE3civT/Q5JdZ626ezwqCMKU4n77WLYtNVVkAocii8/7L+24O9v0ub+wXK0krDlzdhPHXxGpvo9OZFFQiWlKKwwNXPd+AGSL0MmchdRcubfEqpKoI8nNU+nkcbGUV/Cx2cggpfKfWfdTu30J8vPQwdRT1q7W/U1w4vxeMmBzRNxfXtPR2scpAebw8PCsCtm93V08O3OBRapDaTsBTVAdaQgMA+PX8GwTtlRYAZFN75GuwTOGO6uelnbPB6N5oHpevc2Bo2kKVD1GgZEMKRAHXATqt44YeVul5qzssKfeuDu65PxOJmLzTAg2qtNVGcZ4e8ECuDgoxoKMnDIDr1ti7/ebmo1rsSx3lGYqK1IDg1gQsgQO/YhuqgOv+v45ioMz4O9Web/k/WuRbr6f+48HMfDHTcJUt0DFsB5SVaev2T5d3jOWfPpqSroA9K1bQjvE2xCbAdRohABe4bppwJ28T3r6s8uDVX6G9v0s65+kIg3f0qAKv0y8YJPHeJNYTBYcec8xLvMFJoafAtgLjBkD3/DSqXQiI4gWcI3BAtOqynlPBsIwR6hYhBbC+wF3ELvPqgm/H0hyIjYMPGcEPAvYC6B+vLd67eEv+g1yKj7xY920qYjQA=
+before_install:
+- |
+  (curl https://raw.githubusercontent.com/conda-forge/conda-forge-build-setup-feedstock/master/recipe/ff_ci_pr_build.py | \
+      python - -v --ci "travis" "${TRAVIS_REPO_SLUG}" "${TRAVIS_BUILD_NUMBER}" "${TRAVIS_PULL_REQUEST}") || exit 1
+- |
+  echo ""
+  echo "Removing homebrew from Travis CI to avoid conflicts."
+  curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall > ~/uninstall_homebrew
+  chmod +x ~/uninstall_homebrew
+  ~/uninstall_homebrew -fq
+  rm ~/uninstall_homebrew
+install:
+- |
+  echo ""
+  echo "Installing a fresh version of Miniconda."
+  MINICONDA_URL="https://repo.continuum.io/miniconda"
+  MINICONDA_FILE="Miniconda3-latest-MacOSX-x86_64.sh"
+  curl -L -O "${MINICONDA_URL}/${MINICONDA_FILE}"
+  bash $MINICONDA_FILE -b
+- |
+  echo ""
+  echo "Configuring conda."
+  source /Users/travis/miniconda3/bin/activate root
+  conda config --remove channels defaults
+  conda config --add channels defaults
+  conda config --add channels conda-forge
+  conda config --set show_channel_urls true
+  conda install --yes --quiet conda-forge-build-setup
+  source run_conda_forge_build_setup
+script:
+- conda build ./recipe
+- upload_or_check_non_existence ./recipe gouarin --channel=main
